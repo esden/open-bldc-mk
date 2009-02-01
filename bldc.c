@@ -82,7 +82,7 @@ int8_t bldc_start(){
 
     bldc_phase = 0;
     DISABLE_BEMF_INT();
-    bldc_pwm = 10;
+    bldc_pwm = PWM_MIN;
     bldc_set_pwm();
 
     bldc_set_comm();
@@ -92,8 +92,7 @@ int8_t bldc_start(){
         }
         timer -= timer/15+1;
         if(timer < 25){
-            timer = 25;
-            /*return 1;*/
+            return 1;
         }
         bldc_set_comm();
         bldc_phase++;
@@ -110,24 +109,42 @@ int8_t bldc_start(){
  * Monitor the motor and control it's speed.
  */
 void bldc_run(){
+    uint16_t i = 0;
+    int8_t dir=1;
     bldc_stop_detect_timer = timer_new_sw(250);
     while(1){
         if(!bldc_running){
             LED_GREEN_OFF();
+        }else{
+            if(i>500){
+                i=0;
+                bldc_pwm+=dir;
+                bldc_set_pwm();
+                if(bldc_pwm>150){
+                    dir=-1;
+                }
+                if(bldc_pwm<16){
+                    dir=1;
+                }
+            }else{
+                i++;
+            }
         }
+
         if(bldc_old_phase != bldc_phase){
-            bldc_stop_detect_timer = timer_new_sw(250);
+            bldc_stop_detect_timer = timer_new_sw(300);
             bldc_running = 1;
             bldc_old_phase = bldc_phase;
         }
-#if 0
+
         if(timer_sw_check(bldc_stop_detect_timer)){
+            LED_RED_ON();
             DISABLE_BEMF_INT();
             bldc_running = 0;
             bldc_do_start = 1;
             SET_ALL_OFF();
         }
-#endif 
+
         if(bldc_do_start){
             LED_RED_OFF();
             bldc_do_start=0;
@@ -137,10 +154,6 @@ void bldc_run(){
                 bldc_phase--;
                 BEMF_TOGGLE_INT();
                 ENABLE_BEMF_INT();
-                bldc_stop_detect_timer = timer_new_sw(20);
-                while(!timer_sw_check(bldc_stop_detect_timer)){asm("nop");}
-                bldc_pwm = 15;
-                bldc_set_pwm();
                 bldc_stop_detect_timer = timer_new_sw(300);
                 while(!timer_sw_check(bldc_stop_detect_timer)){asm("nop");}
                 bldc_old_phase = 7;
@@ -205,7 +218,6 @@ void bldc_set_comm(){
  */
 ISR(ANA_COMP_vect){
     unsigned char bemf = 0;
-    LED_RED_TOGGLE();
     do{
         bemf = BEMF_H;
         switch(bldc_phase){
@@ -235,7 +247,7 @@ ISR(ANA_COMP_vect){
             break;
         case 2:
             SET_B_H();
-            if(!bemf){
+            if(bemf){
                 SET_A_L();
                 BEMF_SET_C();
                 BEMF_FALLING_INT();
@@ -259,7 +271,7 @@ ISR(ANA_COMP_vect){
             break;
         case 4:
             SET_C_H();
-            if(!bemf){
+            if(bemf){
                 SET_B_L();
                 BEMF_SET_A();
                 BEMF_FALLING_INT();

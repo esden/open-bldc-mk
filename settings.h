@@ -19,6 +19,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#define PWM_MIN 15 /* Minimum pwm so that the motor runs */
 #define PWM_MAX 255 /* Maximal allowed pwm value (unsigned char) */
 
 #endif /* SETTINGS_H */

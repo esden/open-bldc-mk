@@ -50,7 +50,7 @@ uint16_t timer_new_sw(uint16_t time){
 }
 
 uint16_t timer_sw_check(uint16_t sw){
-    return ((timer_sw_counter - sw) & 0x8000) >> 8;
+    return ((sw - timer_sw_counter) & 0x8000) >> 8;
 }
 
 ISR(TIMER0_OVF_vect){
