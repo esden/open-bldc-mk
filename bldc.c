@@ -78,11 +78,12 @@ void bldc_set_pwm(){
  * motor.
  */
 int8_t bldc_start(){
-    unsigned long timer = 300, i;
+    unsigned long timer = START_MAX, i;
+    unsigned char maintain = START_MAINTAIN;
 
     bldc_phase = 0;
     DISABLE_BEMF_INT();
-    bldc_pwm = PWM_MIN;
+    bldc_pwm = PWM_START;
     bldc_set_pwm();
 
     bldc_set_comm();
@@ -90,9 +91,14 @@ int8_t bldc_start(){
         for(i=0; i<timer; i++){
             timer_wait(100);
         }
-        timer -= timer/15+1;
-        if(timer < 25){
-            return 1;
+        timer -= timer/START_DEC+1;
+        if(timer < START_MIN){
+            if(maintain){
+                timer = START_MIN;
+                maintain--;
+            }else{
+                return 1;
+            }
         }
         bldc_set_comm();
         bldc_phase++;
@@ -109,13 +115,17 @@ int8_t bldc_start(){
  * Monitor the motor and control it's speed.
  */
 void bldc_run(){
+#if SPEED_DEMO == 1
     uint16_t i = 0;
     int8_t dir=1;
+#endif
+
     bldc_stop_detect_timer = timer_new_sw(250);
     while(1){
         if(!bldc_running){
             LED_GREEN_OFF();
         }else{
+#if SPEED_DEMO == 1
             if(i>500){
                 i=0;
                 bldc_pwm+=dir;
@@ -129,10 +139,11 @@ void bldc_run(){
             }else{
                 i++;
             }
+#endif
         }
 
         if(bldc_old_phase != bldc_phase){
-            bldc_stop_detect_timer = timer_new_sw(300);
+            bldc_stop_detect_timer = timer_new_sw(270);
             bldc_running = 1;
             bldc_old_phase = bldc_phase;
         }
@@ -151,9 +162,12 @@ void bldc_run(){
             if(bldc_start()){
                 LED_GREEN_ON();
                 bldc_running = 1;
-                bldc_phase--;
                 BEMF_TOGGLE_INT();
                 ENABLE_BEMF_INT();
+                bldc_stop_detect_timer = timer_new_sw(20);
+                while(!timer_sw_check(bldc_stop_detect_timer)){asm("nop");}
+                bldc_pwm = PWM_MIN;
+                bldc_set_pwm();
                 bldc_stop_detect_timer = timer_new_sw(300);
                 while(!timer_sw_check(bldc_stop_detect_timer)){asm("nop");}
                 bldc_old_phase = 7;
@@ -169,39 +183,39 @@ void bldc_set_comm(){
     switch(bldc_phase){
     case 0:
         SET_A_H();
-        SET_B_L();
-        BEMF_SET_C();
-        BEMF_RISING_INT();
-        break;
-    case 1:
-        SET_A_H();
         SET_C_L();
         BEMF_SET_B();
         BEMF_FALLING_INT();
+        break;
+    case 1:
+        SET_B_H();
+        SET_C_L();
+        BEMF_SET_A();
+        BEMF_RISING_INT();
         break;
     case 2:
         SET_B_H();
-        SET_C_L();
-        BEMF_SET_A();
-        BEMF_RISING_INT();
-        break;
-    case 3:
-        SET_B_H();
         SET_A_L();
         BEMF_SET_C();
         BEMF_FALLING_INT();
         break;
-    case 4:
+    case 3:
         SET_C_H();
         SET_A_L();
         BEMF_SET_B();
         BEMF_RISING_INT();
         break;
-    case 5:
+    case 4:
         SET_C_H();
         SET_B_L();
         BEMF_SET_A();
         BEMF_FALLING_INT();
+        break;
+    case 5:
+        SET_A_H();
+        SET_B_L();
+        BEMF_SET_C();
+        BEMF_RISING_INT();
         break;
     }
 }
@@ -217,82 +231,21 @@ void bldc_set_comm(){
  * BEMF_FALLING_INT() or BEMF_TOGGLE_INT() macros.
  */
 ISR(ANA_COMP_vect){
-    unsigned char bemf = 0;
-    do{
-        bemf = BEMF_H;
-        switch(bldc_phase){
-        case 0:
-            SET_A_H();
-            if(bemf){
-                SET_C_L();
-                BEMF_SET_B();
-                BEMF_FALLING_INT();
-                bldc_phase++;
-                bldc_cnt_comm++;
-            }else{
-                SET_B_L();
-            }
-            break;
-        case 1:
-            SET_C_L();
-            if(!bemf){
-                SET_B_H();
-                BEMF_SET_A();
-                BEMF_RISING_INT();
-                bldc_phase++;
-                bldc_cnt_comm++;
-            }else{
-                SET_A_H();
-            }
-            break;
-        case 2:
-            SET_B_H();
-            if(bemf){
-                SET_A_L();
-                BEMF_SET_C();
-                BEMF_FALLING_INT();
-                bldc_phase++;
-                bldc_cnt_comm++;
-            }else{
-                SET_C_L();
-            }
-            break;
-        case 3:
-            SET_A_L();
-            if(!bemf){
-                SET_C_H();
-                BEMF_SET_B();
-                BEMF_RISING_INT();
-                bldc_phase++;
-                bldc_cnt_comm++;
-            }else{
-                SET_B_H();
-            }
-            break;
-        case 4:
-            SET_C_H();
-            if(bemf){
-                SET_B_L();
-                BEMF_SET_A();
-                BEMF_FALLING_INT();
-                bldc_phase++;
-                bldc_cnt_comm++;
-            }else{
-                SET_A_L();
-            }
-            break;
-        case 5:
-            SET_B_L();
-            if(!bemf){
-                SET_A_H();
-                BEMF_SET_C();
-                BEMF_RISING_INT();
-                bldc_phase=0;
-                bldc_cnt_comm++;
-            }else{
-                SET_C_H();
-            }
-            break;
+    unsigned char i;
+
+    /* debounce the bemf signal */
+    for(i=0; i<BEMF_DEBOUNCE_COUNT; i++){
+        if(bldc_phase & 1){
+            if(BEMF_H) i -= BEMF_DEBOUNCE_DEC;
+        }else{
+            if(BEMF_L) i -= BEMF_DEBOUNCE_DEC;
         }
-    } while((BEMF_L && bemf) || (BEMF_H && !bemf));
+    }
+
+    bldc_set_comm();
+
+    bldc_phase++;
+    bldc_phase %= 6;
+
+    bldc_cnt_comm++;
 }
