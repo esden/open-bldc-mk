@@ -21,7 +21,7 @@
 
 #define SPEED_DEMO 0 /* Run a speed ramp demo */
 
-#define PWM_START 15 /* PWM to use for starting the motor */
+#define PWM_START 20 /* PWM to use for starting the motor */
 #define PWM_MIN 30 /* Minimum pwm so that the motor runs */
 #define PWM_MAX 255 /* Maximal allowed pwm value (unsigned char) */
 

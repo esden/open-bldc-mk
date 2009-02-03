@@ -164,8 +164,6 @@ void bldc_run(){
                 bldc_running = 1;
                 BEMF_TOGGLE_INT();
                 ENABLE_BEMF_INT();
-                bldc_stop_detect_timer = timer_new_sw(20);
-                while(!timer_sw_check(bldc_stop_detect_timer)){asm("nop");}
                 bldc_pwm = PWM_MIN;
                 bldc_set_pwm();
                 bldc_stop_detect_timer = timer_new_sw(300);
@@ -236,9 +234,9 @@ ISR(ANA_COMP_vect){
     /* debounce the bemf signal */
     for(i=0; i<BEMF_DEBOUNCE_COUNT; i++){
         if(bldc_phase & 1){
-            if(BEMF_H) i -= BEMF_DEBOUNCE_DEC;
-        }else{
             if(BEMF_L) i -= BEMF_DEBOUNCE_DEC;
+        }else{
+            if(BEMF_H) i -= BEMF_DEBOUNCE_DEC;
         }
     }
 
