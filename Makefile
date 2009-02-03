@@ -1,53 +1,22 @@
+# Open-BLDC Firmware, Firmware for BrushLess Drive Controllers
+# Copyright (C) 2009 Piotr Esden-Tempski <piotr at esden.net>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 PRG            = open-bldc
 OBJ            = main.o timer.o fade.o led.o bldc.o
-#MCU_TARGET     = at90s2313
-#MCU_TARGET     = at90s2333
-#MCU_TARGET     = at90s4414
-#MCU_TARGET     = at90s4433
-#MCU_TARGET     = at90s4434
-#MCU_TARGET     = at90s8515
-#MCU_TARGET     = at90s8535
-#MCU_TARGET     = atmega128
-#MCU_TARGET     = atmega1280
-#MCU_TARGET     = atmega1281
-#MCU_TARGET     = atmega16
-#MCU_TARGET     = atmega163
-#MCU_TARGET     = atmega164p
-#MCU_TARGET     = atmega165
-#MCU_TARGET     = atmega165p
-#MCU_TARGET     = atmega168
-#MCU_TARGET     = atmega169
-#MCU_TARGET     = atmega169p
-#MCU_TARGET     = atmega32
-#MCU_TARGET     = atmega324p
-#MCU_TARGET     = atmega325
-#MCU_TARGET     = atmega3250
-#MCU_TARGET     = atmega329
-#MCU_TARGET     = atmega3290
-#MCU_TARGET     = atmega48
-#MCU_TARGET     = atmega64
-#MCU_TARGET     = atmega640
-#MCU_TARGET     = atmega644
-#MCU_TARGET     = atmega644p
-#MCU_TARGET     = atmega645
-#MCU_TARGET     = atmega6450
-#MCU_TARGET     = atmega649
-#MCU_TARGET     = atmega6490
 MCU_TARGET     = atmega8
-#MCU_TARGET     = atmega8515
-#MCU_TARGET     = atmega8535
-#MCU_TARGET     = atmega88
-#MCU_TARGET     = attiny2313
-#MCU_TARGET     = attiny24
-#MCU_TARGET     = attiny25
-#MCU_TARGET     = attiny26
-#MCU_TARGET     = attiny261
-#MCU_TARGET     = attiny44
-#MCU_TARGET     = attiny45
-#MCU_TARGET     = attiny461
-#MCU_TARGET     = attiny84
-#MCU_TARGET     = attiny85
-#MCU_TARGET     = attiny861
 OPTIMIZE       = -Os
 
 DEFS           =
@@ -119,24 +88,5 @@ esrec: $(PRG)_eeprom.srec
 	$(OBJCOPY) -j .eeprom --change-section-lma .eeprom=0 -O binary $< $@ \
 	|| { echo empty $@ not generated; exit 0; }
 
-# Every thing below here is used by avr-libc's build system and can be ignored
-# by the casual user.
-
-FIG2DEV                 = fig2dev
-EXTRA_CLEAN_FILES       = *.hex *.bin *.srec
-
-dox: eps png pdf
-
-eps: $(PRG).eps
-png: $(PRG).png
-pdf: $(PRG).pdf
-
-%.eps: %.fig
-	$(FIG2DEV) -L eps $< $@
-
-%.pdf: %.fig
-	$(FIG2DEV) -L pdf $< $@
-
-%.png: %.fig
-	$(FIG2DEV) -L png $< $@
-
+flash: hex
+	avrdude -p m8 -c avrispv2 -P usb -U flash:w:$(PRG).hex #-U lfuse:w:0x84:m -U hfuse:w:0xDA:m
