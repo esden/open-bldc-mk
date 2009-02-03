@@ -33,8 +33,8 @@
                          startup */
 #define START_MIN 25 /* Minimum delay between commuttations during the motor
                         startup */
-#define START_DEC 15 /* Delay divisor for calculating the next commutation 
-                        delay in the startup signal generation */
+#define START_DEC(T) (T/15+1) /* Formula for calculating the next commutation 
+                                 delay in the startup signal generation */
 #define START_MAINTAIN 10 /* How many commutations should be done when the 
                              maximal start signal frequency is reached */
 

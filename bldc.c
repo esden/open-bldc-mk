@@ -91,7 +91,7 @@ int8_t bldc_start(){
         for(i=0; i<timer; i++){
             timer_wait(100);
         }
-        timer -= timer/START_DEC+1;
+        timer -= START_DEC(timer);
         if(timer < START_MIN){
             if(maintain){
                 timer = START_MIN;
@@ -183,39 +183,39 @@ void bldc_set_comm(){
     switch(bldc_phase){
     case 0:
         SET_A_H();
+        SET_B_L();
+        BEMF_SET_C();
+        BEMF_RISING_INT();
+        break;
+    case 1:
+        SET_A_H();
         SET_C_L();
         BEMF_SET_B();
         BEMF_FALLING_INT();
-        break;
-    case 1:
-        SET_B_H();
-        SET_C_L();
-        BEMF_SET_A();
-        BEMF_RISING_INT();
         break;
     case 2:
         SET_B_H();
+        SET_C_L();
+        BEMF_SET_A();
+        BEMF_RISING_INT();
+        break;
+    case 3:
+        SET_B_H();
         SET_A_L();
         BEMF_SET_C();
         BEMF_FALLING_INT();
         break;
-    case 3:
+    case 4:
         SET_C_H();
         SET_A_L();
         BEMF_SET_B();
         BEMF_RISING_INT();
         break;
-    case 4:
+    case 5:
         SET_C_H();
         SET_B_L();
         BEMF_SET_A();
         BEMF_FALLING_INT();
-        break;
-    case 5:
-        SET_A_H();
-        SET_B_L();
-        BEMF_SET_C();
-        BEMF_RISING_INT();
         break;
     }
 }
