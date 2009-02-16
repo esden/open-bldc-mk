@@ -111,14 +111,35 @@ int8_t bldc_start(){
     return 0;
 }
 
+#if SPEED_DEMO == 1
+
+/**
+ * Run a ramp up and down of motor speeds
+ */
+void bldc_speed_demo(){
+    static uint16_t i = 0;
+    static int8_t dir=1;
+
+    if(i>500){
+        i=0;
+        bldc_pwm+=dir;
+        bldc_set_pwm();
+        if(bldc_pwm>150){
+            dir=-1;
+        }
+        if(bldc_pwm<16){
+            dir=1;
+        }
+    }else{
+        i++;
+    }
+}
+#endif
+
 /**
  * Monitor the motor and control it's speed.
  */
 void bldc_run(){
-#if SPEED_DEMO == 1
-    uint16_t i = 0;
-    int8_t dir=1;
-#endif
 
     bldc_stop_detect_timer = timer_new_sw(250);
     while(1){
@@ -126,19 +147,7 @@ void bldc_run(){
             LED_GREEN_OFF();
         }else{
 #if SPEED_DEMO == 1
-            if(i>500){
-                i=0;
-                bldc_pwm+=dir;
-                bldc_set_pwm();
-                if(bldc_pwm>150){
-                    dir=-1;
-                }
-                if(bldc_pwm<16){
-                    dir=1;
-                }
-            }else{
-                i++;
-            }
+            bldc_speed_demo();
 #endif
         }
 
