@@ -1,0 +1,41 @@
+This software underlies the terms of GPLv3. See COPYING for the
+license.
+
+
+Description:
+============
+
+This is a side project of Open-BLDC (http://open-bldc.esden.net) for
+creating an open source (Free with a non propriatary license)
+alternative Firmware for Mikrokopter (http://www.mikrokopter.de)
+Brushless DC Motor Controllers. The goal is also to make a clean,
+maintainable and easy to understand codebase for experimentation.
+
+Goals:
+======
+
+* Clean well structured code.
+* Find out what concepts can be implemented on the MK ESC
+  * Adaptive timing
+  * Active breaking (probably not possible)
+  * Speed controller
+  * Current controller
+
+Status:
+=======
+
+As of 2009-02-16:
+~~~~~~~~~~~~~~~~~
+
+What works:
+-----------
+* Motor start routine works.
+* Comparator based commutation detection based commutation works.
+
+Known problems:
+---------------
+
+* Motor start routine is not 100% reliable.
+
+* In low speeds the commutation detection based commutation skipps
+  sometimes.
