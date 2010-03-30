@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 PRG            = open-bldc
-OBJ            = main.o timer.o fade.o led.o bldc.o
+OBJ            = main.o timer.o fade.o led.o bldc.o twi.o
 MCU_TARGET     = atmega8
 OPTIMIZE       = -Os
 

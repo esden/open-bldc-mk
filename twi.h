@@ -1,6 +1,7 @@
-/* 
+/*
  * Open-BLDC Firmware, Firmware for BrushLess Drive Controllers
  * Copyright (C) 2009 Piotr Esden-Tempski <piotr at esden.net>
+ * 2010 David Kiliani <mail@davidkiliani.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,28 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <avr/interrupt.h>
+#ifndef TWI_H_
+#define TWI_H_
 
-#include "led.h"
-#include "bldc.h"
-#include "timer.h"
-#include "twi.h"
+#define SLAVE_ADR 0x52;
 
-int main(void){
-    
-    led_init();
+extern uint8_t twi_data;
 
-    timer_init();
+void twi_init();
 
-    twi_init();
-
-    bldc_init();
-
-    sei();
-
-    bldc_run();
-
-    while(1) __asm__("nop");
-
-    return 0;
-}
+#endif /* TWI_H_ */

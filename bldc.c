@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "timer.h"
 #include "led.h"
+#include "twi.h"
 
 #include "bldc_utils.h"
 #include "bldc.h"
@@ -149,6 +150,10 @@ void bldc_run(){
 #if SPEED_DEMO == 1
             bldc_speed_demo();
 #endif
+        }
+        if (twi_data != bldc_pwm) {
+            bldc_pwm = twi_data;
+            bldc_set_pwm();
         }
 
         if(bldc_old_phase != bldc_phase){
