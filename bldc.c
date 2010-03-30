@@ -34,7 +34,7 @@ volatile uint16_t bldc_cnt_comm = 0;
 uint8_t bldc_pwm = 0;
 uint8_t bldc_pwm_max = PWM_MAX;
 uint8_t bldc_running = 0;
-uint8_t bldc_do_start = 1;
+uint8_t bldc_do_start = 0;
 uint16_t bldc_stop_detect_timer;
 uint8_t bldc_old_phase = 7;
 
@@ -162,7 +162,7 @@ void bldc_run(){
         }
 
         if(bldc_old_phase != bldc_phase){
-            bldc_stop_detect_timer = timer_new_sw(270);
+            bldc_stop_detect_timer = timer_new_sw(500);
             bldc_running = 1;
             bldc_old_phase = bldc_phase;
         }
@@ -171,7 +171,7 @@ void bldc_run(){
             LED_RED_ON();
             DISABLE_BEMF_INT();
             bldc_running = 0;
-            bldc_do_start = 1;
+            bldc_do_start = (bldc_pwm != 0);
             SET_ALL_OFF();
         }
 

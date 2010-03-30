@@ -21,8 +21,8 @@
 
 #define SPEED_DEMO 0 /* Run a speed ramp demo */
 
-#define PWM_START 20 /* PWM to use for starting the motor */
-#define PWM_MIN 30 /* Minimum pwm so that the motor runs */
+#define PWM_START 40 /* PWM to use for starting the motor */
+#define PWM_MIN 40 /* Minimum pwm so that the motor runs */
 #define PWM_MAX 255 /* Maximal allowed pwm value (unsigned char) */
 
 #define BEMF_DEBOUNCE_COUNT 15 /* How many cycles to debounce the bemf signal */
