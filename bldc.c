@@ -18,6 +18,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include <stdint.h>
 
 #include "settings.h"
@@ -142,8 +143,12 @@ void bldc_speed_demo(){
  */
 void bldc_run(){
 
+    wdt_enable(WDTO_1S);
+
     bldc_stop_detect_timer = timer_new_sw(250);
     while(1){
+        wdt_reset();
+
         if(!bldc_running){
             LED_GREEN_OFF();
         }else{
