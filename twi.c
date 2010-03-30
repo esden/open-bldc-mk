@@ -21,8 +21,10 @@
 #include <util/twi.h>
 
 #include "twi.h"
+#include "timer.h"
 
 uint8_t twi_data = 0;
+uint16_t twi_timeout_timer;
 
 void twi_init(){
     TWAR = SLAVE_ADR;
@@ -36,6 +38,7 @@ ISR(TWI_vect) {
 		return;
 	case TW_SR_DATA_ACK:
 		twi_data = TWDR;
+		twi_timeout_timer = timer_new_sw(200);
 		TWCR |= _BV(TWINT);
 		return;
     case TW_BUS_ERROR:

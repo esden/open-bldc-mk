@@ -156,6 +156,7 @@ void bldc_run(){
             bldc_speed_demo();
 #endif
         }
+        if(timer_sw_check(twi_timeout_timer)) twi_data = 0;
         if (twi_data != bldc_pwm) {
             bldc_pwm = twi_data;
             bldc_set_pwm();

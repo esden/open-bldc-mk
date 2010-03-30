@@ -23,6 +23,7 @@
 #define SLAVE_ADR 0x52;
 
 extern uint8_t twi_data;
+extern uint16_t twi_timeout_timer;
 
 void twi_init();
 
